@@ -3,9 +3,13 @@ import { FastifyPluginAsync } from "fastify";
 import path from "path";
 import fastifyPlugin from "fastify-plugin";
 
-const dbPlugin: FastifyPluginAsync = async (fastify, opts) => {
+interface DbPluginOptions {
+    filename: string;
+}
 
-    const dbPath = path.join(__dirname, "..", "mydb.sqlite");
+const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (fastify, opts) => {
+
+    const dbPath = path.join(__dirname, "..", opts.filename);
     const db = new Database(dbPath);
 
     db.pragma("journal_mode = WAL");
@@ -17,8 +21,9 @@ const dbPlugin: FastifyPluginAsync = async (fastify, opts) => {
         db.exec(`
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL
         )`);
         fastify.log.info("Database table 'users' ensured");
     } catch (err) {
