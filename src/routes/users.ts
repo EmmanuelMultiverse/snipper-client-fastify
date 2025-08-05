@@ -1,5 +1,5 @@
 import { getUserByIdSchema } from "../schemas/userSchemas"
-import type { ErrorResponse } from "../types";
+import type { ErrorResponse } from "../types/types";
 import type { User } from "../schemas/userSchemas";
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
@@ -8,8 +8,8 @@ const userRoutes: FastifyPluginAsyncZod = async (fastify, options) => {
 
     fastify.get("/", async (req, res) => {
         try {
-            const users: User[] = db.prepare(`SELECT * FROM users`).all() as User[];
-            return res.send(users);
+            const users: User[] = await fastify.getAllUsers();
+            return res.status(200).send(users);
 
         } catch (err) {
             fastify.log.error(err);
@@ -21,13 +21,13 @@ const userRoutes: FastifyPluginAsyncZod = async (fastify, options) => {
     fastify.get("/:id", { schema: getUserByIdSchema }, async (req, res) => {
         try {
             const { id } = req.params;
-            const user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+            const user = await fastify.findUserById(parseInt(id));
             
             if (!user) {
                 return res.status(404).send( { error: "User not found"} as ErrorResponse);
             }
 
-            return res.send(user);
+            return res.status(200).send({ username: user.username, email: user.email, id: user.id });
 
         } catch (err) {
             fastify.log.error(err);

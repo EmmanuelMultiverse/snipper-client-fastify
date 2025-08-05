@@ -2,6 +2,8 @@ import Database from "better-sqlite3";
 import { FastifyPluginAsync } from "fastify";
 import path from "path";
 import fastifyPlugin from "fastify-plugin";
+import { Kysely, SqliteDialect } from "kysely";
+import { KyselyDatbase } from "../types/types";
 
 interface DbPluginOptions {
     filename: string;
@@ -14,25 +16,49 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (fastify, opts) => {
 
     db.pragma("journal_mode = WAL");
 
-    fastify.decorate("db", db);
+    const dialect = new SqliteDialect({
+        database: db,
+    })
+
+    const kyselyDB = new Kysely<KyselyDatbase>({
+        dialect,
+    })
+
+    fastify.decorate("db", kyselyDB);
 
     try {
-        // ask about last comma in sql statement
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-        )`);
+
+        await kyselyDB.schema
+            .createTable("users")
+            .ifNotExists()
+            .addColumn("id", "integer", (col) => 
+                col.primaryKey().autoIncrement()
+            )
+            .addColumn("username", "text", (col) => col.unique().notNull())
+            .addColumn("email", "text", (col) => col.unique().notNull())
+            .addColumn("password", "text", (col) => col.notNull())
+            .execute();
+        
         fastify.log.info("Database table 'users' ensured");
+        
+        await kyselyDB.schema
+            .createTable("questions")
+            .ifNotExists()
+            .addColumn("id", "integer", (col) => 
+                col.primaryKey().autoIncrement()
+            )
+            .addColumn("text", "text", (col) => col.notNull())
+            .execute()
+        
+        fastify.log.info("Database table 'questions' ensured");
+
     } catch (err) {
         fastify.log.error("Failed to initialize datbase: ", err);
         process.exit(1);
     }
 
     fastify.addHook("onClose", (instance, done) => {
-        fastify.db.close();
+        db.close();
         fastify.log.info("Better-sqlite3 datbase connection closed.");
         done();
     });

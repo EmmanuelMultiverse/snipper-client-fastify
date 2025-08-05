@@ -23,7 +23,7 @@ export const registerSchema = {
     body: authSchema,
     response: {
         201: z.object({
-            id: z.number().int().positive()
+            id: z.string(),
         }),
         500: z.object({
             error: z.string(),
