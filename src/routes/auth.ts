@@ -8,7 +8,7 @@
 
         fastify.post("/register", {schema: registerSchema}, async (req, res) => {
             try {
-                const { username, email, password} = req.body;
+                const { username, email, password } = req.body;
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const id = await fastify.createUser({username, email, password: hashedPassword}); 
                 return res.status(201).send({ id: id.toString() });
