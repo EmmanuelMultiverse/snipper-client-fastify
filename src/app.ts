@@ -2,10 +2,12 @@
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 
 import dbPlugin from './plugins/db-plugin';
-import userDecorators from './plugins/userDecorators';
+import userDecorators from './plugins/userDecorator';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import questionRoute from './routes/questions';
 import fastJWT from "@fastify/jwt";
+import questionDecorator from './plugins/questionDecorator';
 
 const app: FastifyPluginAsync = async (fastify, opts) => {
 
@@ -18,6 +20,8 @@ const app: FastifyPluginAsync = async (fastify, opts) => {
   await fastify.register(dbPlugin, {
     filename: "db.sqlite"
   })
+
+  await fastify.register(questionDecorator);
 
   await fastify.register(userDecorators);
 
@@ -33,6 +37,10 @@ const app: FastifyPluginAsync = async (fastify, opts) => {
   await fastify.register(userRoutes, {
     prefix: "/users"
   });
+
+  await fastify.register(questionRoute, {
+    prefix: "/questions"
+  })
 
   fastify.addHook("preValidation", async (req: FastifyRequest, res: FastifyReply) => {
 
