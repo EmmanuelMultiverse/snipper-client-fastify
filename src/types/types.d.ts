@@ -2,6 +2,10 @@ export interface ErrorResponse {
     error: string;
 }
 
+export interface FindAllSnippetsOptions {
+    questionId?: number;
+}
+
 import {
 ColumnType,
 Generated,

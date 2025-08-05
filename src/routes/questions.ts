@@ -10,6 +10,7 @@ const questionRoute: FastifyPluginAsyncZod = async (fastify, options) => {
             return res.status(201).send({ msg: `Created Successfully: ${id}`});
         
         } catch (err: any) {
+            fastify.log.error(err.message);
             return res.status(500).send({ msg: "Couldnt not create question"});
         }
     })
@@ -21,7 +22,7 @@ const questionRoute: FastifyPluginAsyncZod = async (fastify, options) => {
 
             return res.status(200).send(questions);
         } catch (err: any) {
-            fastify.log.error(err);
+            fastify.log.error(err.message);
             return res.status(500).send({ msg: "Database Error!"});
         }
     })
@@ -37,6 +38,7 @@ const questionRoute: FastifyPluginAsyncZod = async (fastify, options) => {
 
             res.status(200).send(question);
         } catch (err: any) {
+            fastify.log.error(err.message);
             return res.status(500).send({ msg: "Database Error!"});
         }
     })

@@ -7,34 +7,45 @@ const snippetSchema = z.object({
     codeSnippet: z.string()
 })
 
-const createSnippetSchema = {
-    body: snippetSchema,
+export const createSnippetSchema = {
+    body: snippetSchema.omit({id: true}),
     response: {
-        201: {
+        201: z.object({
             msg: z.string(),
-        },
-        500: {
-            msg: z.string()
-        }
+        }),
+        500: z.object({
+            msg: z.string(),
+        })
     }
 }
 
-const getAllSnippetsSchema = {
+export const getAllSnippetsSchema = {
+    querystring: z.object({
+        questionId: z.string().optional(),
+
+    }),
     response: {
         200: z.array(snippetSchema),
-        500: {
-            msg: z.string()
-        }
+        500: z.object({
+            msg: z.string(),
+
+        })
     }
 }
 
-const getSnippetByIdSchema = {
-    params: {
+export const getSnippetByIdSchema = {
+    params: z.object({
         id: z.string(),
-    },
+    }),
     response: {
         200: snippetSchema,
-        404: { msg: z.string() },
-        500: { msg: z.string() },
+        404: z.object({
+            msg: z.string(),
+        }),
+        500: z.object({
+            msg: z.string(),
+        }),
     }
 }
+
+export type Snippet = z.infer<typeof snippetSchema>;

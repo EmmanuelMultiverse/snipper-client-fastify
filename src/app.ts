@@ -8,6 +8,8 @@ import userRoutes from './routes/users';
 import questionRoute from './routes/questions';
 import fastJWT from "@fastify/jwt";
 import questionDecorator from './plugins/questionDecorator';
+import snippetDecorator from './plugins/snippetDecorator';
+import snippetsRoute from './routes/snippets';
 
 const app: FastifyPluginAsync = async (fastify, opts) => {
 
@@ -22,8 +24,8 @@ const app: FastifyPluginAsync = async (fastify, opts) => {
   })
 
   await fastify.register(questionDecorator);
-
   await fastify.register(userDecorators);
+  await fastify.register(snippetDecorator);
 
   await fastify.register(fastJWT, {
     secret: jwtSecret,
@@ -42,6 +44,10 @@ const app: FastifyPluginAsync = async (fastify, opts) => {
     prefix: "/questions"
   })
 
+  await fastify.register(snippetsRoute, {
+    prefix: "/snippets"
+  })
+
   fastify.addHook("preValidation", async (req: FastifyRequest, res: FastifyReply) => {
 
     if (req.routeOptions.url && publicRoutes.includes(req.routeOptions.url)) return;
@@ -50,6 +56,7 @@ const app: FastifyPluginAsync = async (fastify, opts) => {
       await req.jwtVerify();
 
     } catch (err: any) {
+      fastify.log.error(err.message);
       res.status(401).send({ msg: "Unauthorized."});
     }
   })
