@@ -10,7 +10,8 @@ export const loginSchema = {
     body: authSchema.omit({ email: true }),
     response: {
         200: z.object({
-            token: z.string()
+            token: z.string(),
+            msg: z.string(),
         }),
         500: z.object({
             error: z.string()

@@ -1,6 +1,4 @@
-import fastify, { FastifyPluginAsync } from "fastify";
 import { registerSchema, loginSchema } from "../schemas/authSchemas";
-import type { User } from "../schemas/userSchemas";
 import bcrypt from "bcrypt";
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
@@ -40,7 +38,10 @@ const authRoutes: FastifyPluginAsyncZod = async (fastify, options) => {
             if (user) {
                 const correctPassword = await bcrypt.compare(password, user.password);
                 if (correctPassword) {
-                    return res.status(200).send({ token: "SomeValidToken"});
+
+                    const token = fastify.jwt.sign({ username, id: user.id, roles: ["user"]});
+
+                    return res.status(200).send({ token, msg: "Login Successful!" });
                 } else {
                     return res.status(403).send({ error: "Incorrect Password!"});
                 }
